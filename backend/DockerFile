@@ -1,0 +1,21 @@
+
+
+FROM python:3.13.4-slim-bullseye
+
+WORKDIR /app
+
+RUN pip install uv
+
+# Configure uv to use a specific venv path
+# This prevents the venv from being hidden if /app is mounted as a volume
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create virtual environment
+RUN uv venv /opt/venv
+COPY ./pyproject.toml ./uv.lock ./
+RUN uv sync --frozen 
+COPY ./backend/src .
+
+# CMD ["python", "-m", "http.server", "8000"]
+
