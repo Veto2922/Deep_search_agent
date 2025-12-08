@@ -4,6 +4,9 @@ FROM python:3.13.4-slim-bullseye
 
 WORKDIR /app
 
+# curl -X POST -d "message=hello" -H "Content-Type: application/json" http://host.docker.internal:8000/chat
+RUN apt-get update && apt-get install -y libpq-dev gcc curl
+
 RUN pip install uv
 
 # Configure uv to use a specific venv path

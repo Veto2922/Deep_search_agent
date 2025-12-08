@@ -9,7 +9,9 @@ services:
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       - PORT=8000
-
+      - POSTGRES_URL=postgresql://postgres:postgres@db_service:5432/postgres
+    depends_on:
+      - db_service
     env_file:
       - .env.example
 
@@ -27,15 +29,37 @@ services:
         - action: sync+restart
           path: backend/src
           target: /app
+  # Database url: POSTGRES_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 
-  static_html:
-    # image: python:3.13.4-slim-bullseye
-    build:
-      context: .
-      dockerfile: static_html/static.DockerFile
+
+  db_service:
+    image: postgres:17.5
     ports:
-      - 6000:8000
-      - 2000:8000
-    command: python -m http.server 8000
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 3s
+      timeout: 3s
+      retries: 3
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
     volumes:
-      - ./static_html/src:/app
+      - ./db:/var/lib/postgresql/data
+  # static_html:
+  #   # image: python:3.13.4-slim-bullseye
+  #   build:
+  #     context: .
+  #     dockerfile: static_html/static.DockerFile
+  #   ports:
+  #     - 6000:8000
+  #     - 2000:8000
+  #   command: python -m http.server 8000
+  #   volumes:
+  #     - ./static_html/src:/app
+
+volumes:
+  managed_database:
+
+
