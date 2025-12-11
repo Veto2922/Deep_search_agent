@@ -11,6 +11,8 @@ DATABASE_URL = os.getenv("POSTGRES_URL")
 if DATABASE_URL is None or DATABASE_URL == "":
     raise ValueError("POSTGRES_URL is not set")
 
+DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+
 engine = sqlmodel.create_engine(DATABASE_URL)
 
 def init_db():

@@ -50,3 +50,6 @@ Keep these snippets handy whenever you rebuild, run, ship, or test the container
 
 
 >docker compose run backend /bin/bash
+
+
+curl http://localhost:12434/v1/chat/completions -H "Content-Type: application/json" -d '{"model": "ai/qwen3:0.6B-F16","messages": [{"role": "user", "content": "Hello, how are you?"}]}'

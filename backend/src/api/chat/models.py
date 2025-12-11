@@ -27,4 +27,4 @@ class ChatMessageList(SQLModel):
     message:str
     created_at: datetime = Field(
                                 default= None
-                                )    
+                                )       

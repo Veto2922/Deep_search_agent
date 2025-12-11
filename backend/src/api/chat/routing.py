@@ -3,6 +3,9 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session , select
 from .models import ChatMessagePayload  ,ChatMessages , ChatMessageList
 
+
+from api.ai.services import generate_email_message
+from api.ai.schemas import EmailMessage
 from api.db import get_session
 router = APIRouter()
 
@@ -19,7 +22,7 @@ async def chat_list_messages(session: Session = Depends(get_session)):
 
 
 # curl -X POST -d "{"message":"hello"}"" -H "Content-Type: application/json" http://localhost:8070/chat
-@router.post("/chat" , response_model=ChatMessageList)
+@router.post("/chat" , response_model=EmailMessage)
 async def chat(payload: ChatMessagePayload,
     session: Session = Depends(get_session)):
     data = payload.model_dump()
@@ -29,7 +32,8 @@ async def chat(payload: ChatMessagePayload,
     session.commit()
     session.refresh(obj)
 
-    return obj
+    response = generate_email_message(data["message"])
+    return response
 
 
 
