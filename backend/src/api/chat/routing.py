@@ -1,12 +1,14 @@
 from typing import List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends , HTTPException
 from sqlmodel import Session , select
 from .models import ChatMessagePayload  ,ChatMessages , ChatMessageList
 
 
 from api.ai.services import generate_email_message
-from api.ai.schemas import EmailMessage
+from api.ai.schemas import EmailMessage , SupervisorMessageSchema
 from api.db import get_session
+from api.ai.agents import get_supervisor_agent
+from fastapi import HTTPException
 router = APIRouter()
 
 
@@ -22,18 +24,21 @@ async def chat_list_messages(session: Session = Depends(get_session)):
 
 
 # curl -X POST -d "{"message":"hello"}"" -H "Content-Type: application/json" http://localhost:8070/chat
-@router.post("/chat" , response_model=EmailMessage)
+@router.post("/chat" , response_model= SupervisorMessageSchema)
 async def chat(payload: ChatMessagePayload,
     session: Session = Depends(get_session)):
     data = payload.model_dump()
-    print(data)
-    obj= ChatMessages.model_validate(data)
+    obj = ChatMessages.model_validate(data)
     session.add(obj)
     session.commit()
     session.refresh(obj)
 
-    response = generate_email_message(data["message"])
-    return response
+    response_text = get_supervisor_agent(data["message"])
+    if not response_text:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    
+    return SupervisorMessageSchema(content=response_text)
+
 
 
 

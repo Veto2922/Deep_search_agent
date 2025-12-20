@@ -1,6 +1,24 @@
 from langchain_core.tools import tool
-from backend.src.api.myemailer.sender import send_email
-from backend.src.api.myemailer.inbox_reader import read_inbox
+from langchain_core.runnables import RunnableConfig
+from api.myemailer.sender import send_email
+from api.myemailer.inbox_reader import read_inbox
+
+from .services import generate_email_message as generate_email_message_service
+
+@tool
+def generate_email_message(query: str , config: RunnableConfig)-> str:
+    """
+    Generate an email message based on the given query.
+
+    Args:
+        query:str- The query to generate an email message for
+    """
+    try:
+
+        message = generate_email_message_service(query)
+        return f"Subject: {message.subject}\nContent: {message.contents}"
+    except Exception as e:
+        return f"Failed to generate email message: {str(e)}"
 
 @tool
 def send_me_email(subject: str, content: str)-> str:
@@ -41,3 +59,35 @@ def get_unread_emails(hours: int = 48)-> str:
             msg += f"{key}: {value}\n"
         cleaned.append(msg)
     return "\n------\n".join(cleaned)[:500]
+
+
+
+# Wrap sub-agents as tools
+@tool
+def read_and_send_emails(query: str):
+    """
+    Read and send emails
+    Args:
+        query:str- The query to read and send emails
+    """
+    from .agents import get_email_agent  # Import here to avoid circular import
+    try:
+        email_agent = get_email_agent(query)
+        return email_agent
+    except Exception as e:
+        return f"Failed to read and send emails: {str(e)}"
+
+@tool
+def research_and_write_email(query: str):
+    """
+    Research and write email data
+    Args:
+        query:str- The query to research and write email data
+    """
+    from .agents import get_research_agent  # Import here to avoid circular import
+    try:
+        research_agent = get_research_agent(query)
+        return research_agent
+    except Exception as e:
+        return f"Failed to research and write email data: {str(e)}"
+    

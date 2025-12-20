@@ -1,5 +1,5 @@
 import os
-from backend.src.api.myemailer.gmail_imap_parser import GmailImapParser
+from api.myemailer.gmail_imap_parser import GmailImapParser
 
 # pip install python-dotenv
 from dotenv import load_dotenv
